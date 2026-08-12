@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "toxic-comment-mlops"
+version = "0.1.0"
+description = "Production-oriented toxic-comment classification system"
+requires-python = ">=3.11,<3.13"
+dependencies = [
+    "boto3",
+    "fastapi",
+    "httpx",
+    "joblib",
+    "numpy",
+    "pandas",
+    "pydantic-settings",
+    "scikit-learn",
+    "streamlit",
+    "uvicorn[standard]",
+    "wandb",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "ruff",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.ruff.format]
+quote-style = "double"

@@ -1,0 +1,37 @@
+# Python-generated files
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+
+# Local datasets and trained models
+data/raw/*
+data/processed/*
+models/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!models/.gitkeep
+
+# Weights & Biases local files
+wandb/
+
+# Streamlit secrets
+.streamlit/secrets.toml
+
+# Editors and macOS
+.vscode/
+.idea/
+.DS_Store
