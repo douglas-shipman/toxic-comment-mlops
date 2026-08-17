@@ -1,0 +1,55 @@
+import numpy as np
+from fastapi.testclient import TestClient
+
+from toxic_mlops.api import main as api_main
+
+
+class FakeModel:
+    def predict_proba(self, comments):
+        assert len(comments) == 1
+        return np.array([[0.9, 0.1, 0.2, 0.05, 0.7, 0.1]])
+
+
+def test_health_endpoint():
+    client = TestClient(api_main.app)
+
+    response = client.get("/health")
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "healthy"
+
+
+def test_predict_endpoint(monkeypatch):
+    monkeypatch.setattr(
+        api_main,
+        "get_model",
+        lambda: (FakeModel(), "test-model:v1"),
+    )
+    client = TestClient(api_main.app)
+
+    response = client.post(
+        "/predict",
+        json={"comment_text": "Example comment"},
+    )
+
+    assert response.status_code == 200
+
+    result = response.json()
+    assert result["model_version"] == "test-model:v1"
+    assert result["is_toxic"] is True
+    assert result["labels"][0]["label"] == "toxic"
+    assert result["labels"][0]["predicted"] is True
+    assert result["labels"][4]["label"] == "insult"
+    assert result["labels"][4]["predicted"] is True
+    assert result["latency_ms"] >= 0
+
+
+def test_predict_rejects_empty_comment():
+    client = TestClient(api_main.app)
+
+    response = client.post(
+        "/predict",
+        json={"comment_text": ""},
+    )
+
+    assert response.status_code == 422
