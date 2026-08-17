@@ -4,7 +4,6 @@ from pathlib import Path
 from typing import Any
 
 import joblib
-
 import wandb
 
 LOCAL_MODEL_PATH = Path("models/toxic_comment_model.joblib")

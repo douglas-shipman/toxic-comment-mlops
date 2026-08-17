@@ -5,13 +5,13 @@ from pathlib import Path
 
 import joblib
 import numpy as np
+import wandb
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import f1_score, precision_score, recall_score, roc_auc_score
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.pipeline import Pipeline
 
-import wandb
 from toxic_mlops.training.data import LABEL_COLUMNS, load_dataset, split_dataset
 
 DATASET_PATH = Path("data/raw/train.csv")
