@@ -5,10 +5,17 @@ from fastapi import FastAPI, HTTPException
 
 from toxic_mlops.api.model_loader import LOCAL_MODEL_PATH, get_model
 from toxic_mlops.api.schemas import (
+    FeedbackRequest,
+    FeedbackResponse,
     HealthResponse,
     LabelPrediction,
     PredictionRequest,
     PredictionResponse,
+)
+from toxic_mlops.db.dynamodb import (
+    is_dynamodb_enabled,
+    log_prediction,
+    record_feedback,
 )
 from toxic_mlops.training.data import LABEL_COLUMNS
 
@@ -59,10 +66,66 @@ def predict(request: PredictionRequest) -> PredictionResponse:
 
     latency_ms = (perf_counter() - started_at) * 1000
 
-    return PredictionResponse(
+    response = PredictionResponse(
         request_id=str(uuid4()),
         is_toxic=any(item.predicted for item in labels),
         labels=labels,
         model_version=model_version,
         latency_ms=round(latency_ms, 3),
+    )
+
+    if is_dynamodb_enabled():
+        try:
+            log_prediction(
+                request_id=response.request_id,
+                comment_text=request.comment_text,
+                is_toxic=response.is_toxic,
+                labels=[item.model_dump() for item in response.labels],
+                model_version=response.model_version,
+                latency_ms=response.latency_ms,
+            )
+        except Exception as error:
+            raise HTTPException(
+                status_code=503,
+                detail="Prediction logging is unavailable.",
+            ) from error
+
+    return response
+
+@app.post("/feedback", response_model=FeedbackResponse)
+def feedback(request: FeedbackRequest) -> FeedbackResponse:
+    """Attach human-reviewed labels to an existing prediction."""
+    if not is_dynamodb_enabled():
+        raise HTTPException(
+            status_code=503,
+            detail="Feedback storage is unavailable.",
+        )
+
+    invalid_labels = sorted(set(request.actual_labels) - set(LABEL_COLUMNS))
+    if invalid_labels:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Unknown labels: {invalid_labels}",
+        )
+
+    try:
+        prediction_correct = record_feedback(
+            request_id=request.request_id,
+            actual_labels=request.actual_labels,
+        )
+    except KeyError as error:
+        raise HTTPException(
+            status_code=404,
+            detail="Prediction request not found.",
+        ) from error
+    except Exception as error:
+        raise HTTPException(
+            status_code=503,
+            detail="Feedback storage is unavailable.",
+        ) from error
+
+    return FeedbackResponse(
+        request_id=request.request_id,
+        saved=True,
+        prediction_correct=prediction_correct,
     )

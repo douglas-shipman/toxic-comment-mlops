@@ -53,3 +53,50 @@ def test_predict_rejects_empty_comment():
     )
 
     assert response.status_code == 422
+
+def test_feedback_endpoint(monkeypatch):
+    monkeypatch.setattr(
+        api_main,
+        "is_dynamodb_enabled",
+        lambda: True,
+    )
+    monkeypatch.setattr(
+        api_main,
+        "record_feedback",
+        lambda request_id, actual_labels: True,
+    )
+    client = TestClient(api_main.app)
+
+    response = client.post(
+        "/feedback",
+        json={
+            "request_id": "test-request",
+            "actual_labels": ["toxic", "insult"],
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "request_id": "test-request",
+        "saved": True,
+        "prediction_correct": True,
+    }
+
+
+def test_feedback_rejects_unknown_labels(monkeypatch):
+    monkeypatch.setattr(
+        api_main,
+        "is_dynamodb_enabled",
+        lambda: True,
+    )
+    client = TestClient(api_main.app)
+
+    response = client.post(
+        "/feedback",
+        json={
+            "request_id": "test-request",
+            "actual_labels": ["not_a_real_label"],
+        },
+    )
+
+    assert response.status_code == 422

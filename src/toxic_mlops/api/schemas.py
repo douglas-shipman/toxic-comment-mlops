@@ -22,3 +22,13 @@ class PredictionResponse(BaseModel):
 class HealthResponse(BaseModel):
     status: str
     model_available: bool
+
+class FeedbackRequest(BaseModel):
+    request_id: str = Field(min_length=1)
+    actual_labels: list[str] = Field(default_factory=list)
+
+
+class FeedbackResponse(BaseModel):
+    request_id: str
+    saved: bool
+    prediction_correct: bool
