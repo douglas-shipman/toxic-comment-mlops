@@ -1,0 +1,13 @@
+.git
+.github
+.venv
+__pycache__
+.pytest_cache
+.ruff_cache
+wandb
+data
+models
+tests
+*.pyc
+.env
+.DS_Store
