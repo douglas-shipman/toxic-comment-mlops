@@ -10,13 +10,21 @@ class FakeModel:
         return np.array([[0.9, 0.1, 0.2, 0.05, 0.7, 0.1]])
 
 
-def test_health_endpoint():
+def test_health_endpoint(monkeypatch):
+    monkeypatch.setattr(
+        api_main,
+        "is_model_configured",
+        lambda: True,
+    )
     client = TestClient(api_main.app)
 
     response = client.get("/health")
 
     assert response.status_code == 200
-    assert response.json()["status"] == "healthy"
+    assert response.json() == {
+        "status": "healthy",
+        "model_available": True,
+    }
 
 
 def test_predict_endpoint(monkeypatch):

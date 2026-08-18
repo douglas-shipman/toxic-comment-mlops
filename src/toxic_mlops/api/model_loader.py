@@ -28,3 +28,9 @@ def get_model() -> tuple[Any, str]:
         )
 
     return joblib.load(LOCAL_MODEL_PATH), "local-development-model"
+
+def is_model_configured() -> bool:
+    """Return whether a local or Registry model is configured."""
+    return LOCAL_MODEL_PATH.exists() or bool(
+        os.getenv("WANDB_MODEL_ARTIFACT")
+    )

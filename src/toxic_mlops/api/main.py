@@ -3,7 +3,7 @@ from uuid import uuid4
 
 from fastapi import FastAPI, HTTPException
 
-from toxic_mlops.api.model_loader import LOCAL_MODEL_PATH, get_model
+from toxic_mlops.api.model_loader import get_model, is_model_configured
 from toxic_mlops.api.schemas import (
     FeedbackRequest,
     FeedbackResponse,
@@ -33,7 +33,7 @@ def health() -> HealthResponse:
     """Report whether the API and local model are available."""
     return HealthResponse(
         status="healthy",
-        model_available=LOCAL_MODEL_PATH.exists(),
+        model_available=is_model_configured(),
     )
 
 
