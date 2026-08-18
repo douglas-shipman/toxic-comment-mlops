@@ -1,4 +1,5 @@
 # Toxic Comment MLOps
+[![CI](https://github.com/douglas-shipman/toxic-comment-mlops/actions/workflows/ci.yml/badge.svg)](https://github.com/douglas-shipman/toxic-comment-mlops/actions/workflows/ci.yml)
 
 A production-oriented, multilabel toxic-comment moderation system implementing experiment tracking, model versioning, API serving, cloud persistence, user feedback, monitoring, automated testing, containerization, and AWS deployment.
 
